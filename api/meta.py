@@ -42,5 +42,6 @@ class handler(BaseHTTPRequestHandler):
             self.send_response(400, e)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
+            self.wfile.write(str(e).encode(encoding='utf_8'))
 
         return
