@@ -28,7 +28,7 @@ class handler(BaseHTTPRequestHandler):
             latestPrice = get_live_price(ticker)
 
             # todayDateStr = datetime.today().strftime('%d-%m-%Y')
-            expirationDate = datetime.strptime(expirationDateStr, '%m/%d/%Y')
+            expirationDate = datetime.strptime(expirationDateStr, '%m-%d-%Y')
             daysLeft = expirationDate - datetime.today()
 
             options_chain = ops.get_options_chain(ticker, expirationDateStr)
@@ -42,9 +42,12 @@ class handler(BaseHTTPRequestHandler):
             # df_filter = df[(df['Offset'] > -1000) & (df['Offset'] < 100)]
             df_filter = df[(df['Offset'] > -70) & (df['Offset'] < 0)]
 
-            json_string = json.dumps(
-                {"ticker": ticker, "daysLeft": daysLeft.days, "price": latestPrice, "put-option-chain": df_filter.to_json()})
-            self.wfile.write(json_string.encode(encoding='utf_8'))
+            # filter columns of interest only.
+            df_filter.rename(
+                columns={"Open Interest": "OpenInterest", "Last Price": "LastPrice"}, inplace=True)
+            jsonData = df_filter[[
+                "Strike", "Offset", "Percentage", "LastPrice", "OpenInterest"]].to_json(orient='records')
+            self.wfile.write(jsonData.encode(encoding='utf_8'))
 
         except Exception as e:
             print(e)

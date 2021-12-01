@@ -34,7 +34,7 @@ class handler(BaseHTTPRequestHandler):
             self.end_headers()
 
             json_string = json.dumps(
-                {"ticker": ticker, "price": latestPrice, "expiration-dates": friendlyExpirationDates})
+                {"ticker": ticker, "price": latestPrice, "expirationDates": friendlyExpirationDates})
             self.wfile.write(json_string.encode(encoding='utf_8'))
 
         except Exception as e:
