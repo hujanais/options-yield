@@ -29,14 +29,14 @@ class handler(BaseHTTPRequestHandler):
 
             # todayDateStr = datetime.today().strftime('%d-%m-%Y')
             expirationDate = datetime.strptime(expirationDateStr, '%m-%d-%Y')
-            daysLeft = expirationDate - datetime.today()
 
             options_chain = ops.get_options_chain(ticker, expirationDateStr)
             df = options_chain["puts"]
 
             # build offset and percentage columns
-            df["Offset"] = (df["Strike"] - latestPrice) / latestPrice * 100
-            df["Percentage"] = df["Last Price"] / df["Strike"] * 100
+            df["Offset"] = round(
+                (df["Strike"] - latestPrice) / latestPrice * 100, 0)
+            df["Percentage"] = round(df["Last Price"] / df["Strike"] * 100, 2)
 
             # filter by offset price
             # df_filter = df[(df['Offset'] > -1000) & (df['Offset'] < 100)]
