@@ -10,7 +10,7 @@ import json
 
 class handler(BaseHTTPRequestHandler):
 
-    # GET /api/put-options?ticker=xxx%expiry=MM/dd/yyyy
+    # GET /api/call-options?ticker=xxx%expiry=MM/dd/yyyy
     def do_GET(self):
 
         try:
@@ -30,7 +30,7 @@ class handler(BaseHTTPRequestHandler):
             expirationDate = datetime.strptime(expirationDateStr, '%m-%d-%Y')
 
             options_chain = ops.get_options_chain(ticker, expirationDateStr)
-            df = options_chain["puts"]
+            df = options_chain["calls"]
 
             # build offset and percentage columns
             df["Offset"] = round(
@@ -38,7 +38,7 @@ class handler(BaseHTTPRequestHandler):
             df["Percentage"] = round(df["Last Price"] / df["Strike"] * 100, 2)
 
             # filter by offset price
-            df_filter = df[(df['Offset'] > -100) & (df['Offset'] < 0)]
+            df_filter = df[(df['Offset'] > 0) & (df['Offset'] < 200)]
 
             # filter columns of interest only.
             df_filter.rename(
