@@ -42,9 +42,9 @@ class handler(BaseHTTPRequestHandler):
 
             # filter columns of interest only.
             df_filter.rename(
-                columns={"Open Interest": "OpenInterest", "Last Price": "LastPrice"}, inplace=True)
+                columns={"Open Interest": "OpenInterest", "Last Price": "LastPrice", "Implied Volatility": "IV"}, inplace=True)
             jsonData = df_filter[[
-                "Strike", "Offset", "Percentage", "LastPrice", "OpenInterest"]].to_json(orient='records')
+                "Strike", "Offset", "Percentage", "LastPrice", "OpenInterest", "IV"]].to_json(orient='records')
             self.wfile.write(jsonData.encode(encoding='utf_8'))
 
         except Exception as e:

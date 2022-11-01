@@ -26,10 +26,10 @@ class handler(BaseHTTPRequestHandler):
             print(latestPrice)
 
             # get the historical data.
-            three_yrs_ago = datetime.now() - relativedelta(years=3)
+            ten_yrs_ago = datetime.now() - relativedelta(years=10)
 
             df_prices = get_data(
-                ticker, start_date=three_yrs_ago, index_as_date=False)
+                ticker, start_date=ten_yrs_ago, index_as_date=False)
 
             # convert date to epoch-secs integer type so that json can handle it.
             df_prices['date'] = [time.mktime(
