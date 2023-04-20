@@ -25,10 +25,10 @@ class TestClass:
             # todayDateStr = datetime.today().strftime('%d-%m-%Y')
             expirationDate = datetime.strptime(expirationDateStr, "%m-%d-%Y")
 
+            print(latestPrice, expirationDate)
+
             options_chain = ops.get_options_chain(ticker, expirationDateStr)
             df = options_chain["puts"]
-
-            print(df.tail(5))
 
             # build offset and percentage columns
             df["Offset"] = round((df["Strike"] - latestPrice) / latestPrice * 100, 0)
@@ -73,6 +73,8 @@ class TestClass:
                 ]
             ].to_json(orient="records")
 
+            print(df_filter.tail(10))
+
             # self.wfile.write(jsonData.encode(encoding="utf_8"))
 
         except Exception as e:
@@ -86,10 +88,9 @@ class TestClass:
         return
 
     def calculate(self, row, currPrice, days):
-        print(row)
         strikePrice = row["Strike"]
         iv = float(row["IV"].strip("%")) / 100
-        vt = iv * math.sqrt(days)
+        vt = iv * math.sqrt(days / 365.25)
         impg = math.log(strikePrice / currPrice)
         d1 = impg / vt
         y = math.floor(1 / (1 + 0.2316419 * abs(d1)) * 100000) / 100000
@@ -105,8 +106,8 @@ class TestClass:
         if d1 < 0:
             x = 1 - x
 
-        pbelow = math.floor(x * 1000) / 10  # for put
-        pabove = math.floor((1 - x) * 1000) / 10  # for call
+        pbelow = x * 100  # for put
+        pabove = (1 - x) * 100  # for call
         return pbelow
 
 
