@@ -1,4 +1,3 @@
-from http.server import BaseHTTPRequestHandler
 from urllib import parse
 from datetime import datetime
 import traceback
@@ -10,18 +9,15 @@ import math
 import json
 
 
-class handler(BaseHTTPRequestHandler):
-    # GET /api/put-options?ticker=xxx&expiry=MM-dd-yyyy
-    def do_GET(self):
+class TestClass:
+    def test(self):
         try:
-            # querystring ?ticker=xxx&expiry=xx-xx-xxxx
-            dic = dict(parse.parse_qsl(parse.urlsplit(self.path).query))
-            ticker = dic["ticker"]
-            expirationDateStr = dic["expiry"]  # 03-15-2019
+            ticker = "TSLA"
+            expirationDateStr = "04-28-2023"  # 03-15-2019
 
-            self.send_response(200)
-            self.send_header("Content-type", "application/json")
-            self.end_headers()
+            # self.send_response(200)
+            # self.send_header("Content-type", "application/json")
+            # self.end_headers()
 
             # get current price.
             latestPrice = get_live_price(ticker)
@@ -31,6 +27,8 @@ class handler(BaseHTTPRequestHandler):
 
             options_chain = ops.get_options_chain(ticker, expirationDateStr)
             df = options_chain["puts"]
+
+            print(df.tail(5))
 
             # build offset and percentage columns
             df["Offset"] = round((df["Strike"] - latestPrice) / latestPrice * 100, 0)
@@ -74,18 +72,21 @@ class handler(BaseHTTPRequestHandler):
                     "Prob",
                 ]
             ].to_json(orient="records")
-            self.wfile.write(jsonData.encode(encoding="utf_8"))
+
+            # self.wfile.write(jsonData.encode(encoding="utf_8"))
 
         except Exception as e:
             tb = traceback.format_exc()
-            self.send_response(400, tb)
-            self.send_header("Content-type", "application/json")
-            self.end_headers()
-            self.wfile.write(str(e).encode(encoding="utf_8"))
+            print(tb)
+            # self.send_response(400, tb)
+            # self.send_header("Content-type", "application/json")
+            # self.end_headers()
+            # self.wfile.write(str(e).encode(encoding="utf_8"))
 
         return
 
     def calculate(self, row, currPrice, days):
+        print(row)
         strikePrice = row["Strike"]
         iv = float(row["IV"].strip("%")) / 100
         vt = iv * math.sqrt(days)
@@ -107,3 +108,7 @@ class handler(BaseHTTPRequestHandler):
         pbelow = math.floor(x * 1000) / 10  # for put
         pabove = math.floor((1 - x) * 1000) / 10  # for call
         return pbelow
+
+
+myObj = TestClass()
+myObj.test()

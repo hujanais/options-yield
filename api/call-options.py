@@ -9,10 +9,8 @@ import json
 
 
 class handler(BaseHTTPRequestHandler):
-
     # GET /api/call-options?ticker=xxx%expiry=MM/dd/yyyy
     def do_GET(self):
-
         try:
             # querystring ?ticker=xxx&expiry=xx-xx-xxxx
             dic = dict(parse.parse_qsl(parse.urlsplit(self.path).query))
@@ -20,37 +18,58 @@ class handler(BaseHTTPRequestHandler):
             expirationDateStr = dic["expiry"]  # 03/15/2019
 
             self.send_response(200)
-            self.send_header('Content-type', 'application/json')
+            self.send_header("Content-type", "application/json")
             self.end_headers()
 
             # get current price.
             latestPrice = get_live_price(ticker)
 
             # todayDateStr = datetime.today().strftime('%d-%m-%Y')
-            expirationDate = datetime.strptime(expirationDateStr, '%m-%d-%Y')
+            expirationDate = datetime.strptime(expirationDateStr, "%m-%d-%Y")
 
             options_chain = ops.get_options_chain(ticker, expirationDateStr)
             df = options_chain["calls"]
 
             # build offset and percentage columns
-            df["Offset"] = round(
-                (df["Strike"] - latestPrice) / latestPrice * 100, 0)
+            df["Offset"] = round((df["Strike"] - latestPrice) / latestPrice * 100, 0)
             df["Percentage"] = round(df["Last Price"] / df["Strike"] * 100, 2)
 
             # filter by offset price
-            df_filter = df[(df['Offset'] > 0) & (df['Offset'] < 200)]
+            df_filter = df[(df["Offset"] > 0) & (df["Offset"] < 200)]
 
             # filter columns of interest only.
             df_filter.rename(
-                columns={"Open Interest": "OpenInterest", "Last Price": "LastPrice", "Implied Volatility": "IV"}, inplace=True)
-            jsonData = df_filter[[
-                "Strike", "Offset", "Percentage", "Bid", "Ask", "LastPrice", "Volume", "OpenInterest", "IV"]].to_json(orient='records')
-            self.wfile.write(jsonData.encode(encoding='utf_8'))
+                columns={
+                    "Open Interest": "OpenInterest",
+                    "Last Price": "LastPrice",
+                    "Implied Volatility": "IV",
+                },
+                inplace=True,
+            )
+
+            # add a dummy prob column
+            df_filter["Prob"] = 0
+
+            jsonData = df_filter[
+                [
+                    "Strike",
+                    "Offset",
+                    "Percentage",
+                    "Bid",
+                    "Ask",
+                    "LastPrice",
+                    "Volume",
+                    "OpenInterest",
+                    "IV",
+                    "Prob",
+                ]
+            ].to_json(orient="records")
+            self.wfile.write(jsonData.encode(encoding="utf_8"))
         except Exception as e:
             print(e)
             self.send_response(400, e)
-            self.send_header('Content-type', 'application/json')
+            self.send_header("Content-type", "application/json")
             self.end_headers()
-            self.wfile.write(str(e).encode(encoding='utf_8'))
+            self.wfile.write(str(e).encode(encoding="utf_8"))
 
         return
